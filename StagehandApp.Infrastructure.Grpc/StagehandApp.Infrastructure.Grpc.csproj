@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Grpc.AspNetCore" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\StagehandApp.Core\StagehandApp.Core.csproj" />
+		<ProjectReference Include="..\StagehandApp.Infrastructure.Windows\StagehandApp.Infrastructure.Windows.csproj" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<Protobuf Include="Protos\media.proto" GrpcServices="Server" />
+	</ItemGroup>
+</Project>

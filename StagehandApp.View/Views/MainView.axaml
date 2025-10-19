@@ -1,0 +1,151 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="clr-namespace:StagehandApp.ViewModels"
+			 xmlns:conv="using:StagehandApp.Views.Converters"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 x:Class="StagehandApp.Views.MainView"
+			 x:DataType="vm:MainViewModel">
+
+	<UserControl.Resources>
+		<conv:BoolToColorConverter x:Key="BoolToColorConverter"/>
+	</UserControl.Resources>
+
+	<Design.DataContext>
+		<vm:MainViewModel />
+	</Design.DataContext>
+
+	<Border Background="#1E1E1E" Padding="20">
+		<Grid RowDefinitions="Auto,300,Auto,Auto,Auto,Auto,*"
+			  ColumnDefinitions="*"
+			  RowSpacing="15">
+
+			<!-- Заголовок и статус -->
+			<StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+				<TextBlock Text="StagehandApp"
+						   FontSize="24"
+						   FontWeight="Bold"
+						   Foreground="White"/>
+				<Border Background="{Binding IsConnected, Converter={StaticResource BoolToColorConverter}}"
+						CornerRadius="10" Padding="8,4">
+					<TextBlock Text="{Binding Status}"
+							   FontSize="12"
+							   Foreground="White"
+							   VerticalAlignment="Center"/>
+				</Border>
+			</StackPanel>
+
+			<!-- Обложка альбома -->
+			<Border Grid.Row="1"
+					Background="#2D2D2D"
+					CornerRadius="15"
+					Padding="20"
+					HorizontalAlignment="Center">
+				<Image Width="260"
+					   Height="260"
+					   Source="{Binding AlbumArt}"
+					   Stretch="UniformToFill">
+				</Image>
+			</Border>
+
+			<!-- Информация о треке -->
+			<StackPanel Grid.Row="2" Spacing="5">
+				<TextBlock Text="{Binding Title}"
+						   FontSize="28"
+						   FontWeight="Bold"
+						   Foreground="White"
+						   TextAlignment="Center"
+						   TextWrapping="Wrap"
+						   HorizontalAlignment="Center"
+						   MaxWidth="400"/>
+
+				<TextBlock Text="{Binding Artist}"
+						   FontSize="20"
+						   Foreground="#E0E0E0"
+						   TextAlignment="Center"
+						   TextWrapping="Wrap"
+						   HorizontalAlignment="Center"
+						   MaxWidth="400"/>
+
+				<TextBlock Text="{Binding Album}"
+						   FontSize="16"
+						   Foreground="#AAAAAA"
+						   TextAlignment="Center"
+						   TextWrapping="Wrap"
+						   HorizontalAlignment="Center"
+						   MaxWidth="400"/>
+			</StackPanel>
+
+			<!-- Кнопки управления -->
+			<Grid Grid.Row="3"
+				  ColumnDefinitions="*,*,*,*"
+				  ColumnSpacing="15"
+				  Margin="0,20,0,0">
+
+				<Button Grid.Column="0"
+						Content="PREV"
+						Command="{Binding PreviousCommand}"
+						HorizontalAlignment="Stretch"
+						FontSize="16"
+						FontWeight="SemiBold"
+						CornerRadius="10"
+						Height="50"
+						Background="#3D3D3D"
+						Foreground="White"
+						BorderThickness="0"/>
+
+				<Button Grid.Column="1"
+						Content="PLAY"
+						Command="{Binding PlayCommand}"
+						HorizontalAlignment="Stretch"
+						FontSize="16"
+						FontWeight="SemiBold"
+						CornerRadius="10"
+						Height="50"
+						Background="#4CAF50"
+						Foreground="White"
+						BorderThickness="0"/>
+
+				<Button Grid.Column="2"
+						Content="PAUSE"
+						Command="{Binding PauseCommand}"
+						HorizontalAlignment="Stretch"
+						FontSize="16"
+						FontWeight="SemiBold"
+						CornerRadius="10"
+						Height="50"
+						Background="#FF9800"
+						Foreground="White"
+						BorderThickness="0"/>
+
+				<Button Grid.Column="3"
+						Content="NEXT"
+						Command="{Binding NextCommand}"
+						HorizontalAlignment="Stretch"
+						FontSize="16"
+						FontWeight="SemiBold"
+						CornerRadius="10"
+						Height="50"
+						Background="#3D3D3D"
+						Foreground="White"
+						BorderThickness="0"/>
+			</Grid>
+
+			<!-- Кнопка переподключения -->
+			<Button Grid.Row="4"
+					Content="RECONNECT"
+					Command="{Binding ConnectCommand}"
+					HorizontalAlignment="Center"
+					Width="200"
+					FontSize="14"
+					CornerRadius="8"
+					Height="40"
+					Background="#2196F3"
+					Foreground="White"
+					BorderThickness="0"
+					IsVisible="{Binding IsConnected, Converter={x:Static BoolConverters.Not}}"/>
+
+		</Grid>
+	</Border>
+</UserControl>

@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+option csharp_namespace = "StagehandApp.Infrastructure.GrpcServer";
+
+import "google/protobuf/empty.proto";
+
+package media;
+
+service Media {
+  rpc Play (google.protobuf.Empty) returns (MediaResponse);
+  rpc Pause (google.protobuf.Empty) returns (MediaResponse);
+  rpc Next (google.protobuf.Empty) returns (MediaResponse);
+  rpc Previous (google.protobuf.Empty) returns (MediaResponse);
+  rpc GetStatus (google.protobuf.Empty) returns (MediaStatusResponse);
+  rpc SubscribeToMediaChanges (google.protobuf.Empty) returns (stream MediaUpdate);
+} 
+
+message MediaResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message MediaStatusResponse {
+  string title = 1;
+  string artist = 2;
+  string album = 3;
+  MediaPlayerStatus status = 4;
+  bytes album_art = 5;
+}
+
+message MediaUpdate {
+  string title = 1;
+  string artist = 2;
+  string album = 3;
+  MediaPlayerStatus status = 4;
+  bytes album_art = 5;
+}
+
+enum MediaPlayerStatus {
+  UNKNOWN = 0;
+  PLAYING = 1;
+  PAUSED = 2;
+  STOPPED = 3;
+}
