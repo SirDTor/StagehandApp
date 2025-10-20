@@ -6,6 +6,8 @@
         xmlns:views="clr-namespace:StagehandApp.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="StagehandApp.Views.MainWindow"
+        Width="600"
+        Height="400"
         Icon="/Assets/avalonia-logo.ico"
         Title="StagehandApp">     
     <Window.Styles>

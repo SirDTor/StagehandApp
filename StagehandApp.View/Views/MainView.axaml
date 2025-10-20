@@ -17,7 +17,7 @@
 	</Design.DataContext>
 
 	<Border Background="#1E1E1E" Padding="20">
-		<Grid RowDefinitions="Auto,300,Auto,Auto,Auto,Auto,*"
+		<Grid RowDefinitions="Auto,200,Auto,*,40"
 			  ColumnDefinitions="*"
 			  RowSpacing="15">
 
@@ -42,8 +42,8 @@
 					CornerRadius="15"
 					Padding="20"
 					HorizontalAlignment="Center">
-				<Image Width="260"
-					   Height="260"
+				<Image Width="200"
+					   Height="200"
 					   Source="{Binding AlbumArt}"
 					   Stretch="UniformToFill">
 				</Image>
@@ -84,49 +84,54 @@
 				  Margin="0,20,0,0">
 
 				<Button Grid.Column="0"
+						Grid.Row="0"
 						Content="PREV"
 						Command="{Binding PreviousCommand}"
 						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
 						FontSize="16"
 						FontWeight="SemiBold"
 						CornerRadius="10"
-						Height="50"
+
 						Background="#3D3D3D"
 						Foreground="White"
 						BorderThickness="0"/>
 
 				<Button Grid.Column="1"
+						Grid.Row="0"
 						Content="PLAY"
 						Command="{Binding PlayCommand}"
 						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
 						FontSize="16"
 						FontWeight="SemiBold"
 						CornerRadius="10"
-						Height="50"
 						Background="#4CAF50"
 						Foreground="White"
 						BorderThickness="0"/>
 
 				<Button Grid.Column="2"
+						Grid.Row="0"
 						Content="PAUSE"
 						Command="{Binding PauseCommand}"
 						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
 						FontSize="16"
 						FontWeight="SemiBold"
 						CornerRadius="10"
-						Height="50"
 						Background="#FF9800"
 						Foreground="White"
 						BorderThickness="0"/>
 
 				<Button Grid.Column="3"
+						Grid.Row="0"
 						Content="NEXT"
 						Command="{Binding NextCommand}"
 						HorizontalAlignment="Stretch"
+						VerticalAlignment="Stretch"
 						FontSize="16"
 						FontWeight="SemiBold"
 						CornerRadius="10"
-						Height="50"
 						Background="#3D3D3D"
 						Foreground="White"
 						BorderThickness="0"/>
