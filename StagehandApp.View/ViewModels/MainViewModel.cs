@@ -24,8 +24,15 @@ public class MainViewModel : ViewModelBase, IDisposable
     private string _artist = "No artist";
     private string _album = "No album";
     private Bitmap? _albumArt;
-    private string _status = "Disconnected";
+    private string _mediaStatus = "nothing";
+    private string _serverStatus = "Disconnected";
     private bool _isConnected;
+
+    public ReactiveCommand<Unit, Unit> PlayPauseCommand { get; }
+    public ReactiveCommand<Unit, Unit> PauseCommand { get; }
+    public ReactiveCommand<Unit, Unit> NextCommand { get; }
+    public ReactiveCommand<Unit, Unit> PreviousCommand { get; }
+    public ReactiveCommand<Unit, Unit> ConnectCommand { get; }
 
     public MainViewModel()
     {
@@ -42,8 +49,7 @@ public class MainViewModel : ViewModelBase, IDisposable
         _grpcClient = new Media.MediaClient(_channel);
 
         // Инициализируем команды
-        PlayCommand = ReactiveCommand.CreateFromTask(PlayAsync);
-        PauseCommand = ReactiveCommand.CreateFromTask(PauseAsync);
+        PlayPauseCommand = ReactiveCommand.CreateFromTask(PlayPauseAsync);
         NextCommand = ReactiveCommand.CreateFromTask(NextAsync);
         PreviousCommand = ReactiveCommand.CreateFromTask(PreviousAsync);
         ConnectCommand = ReactiveCommand.CreateFromTask(ConnectAsync);
@@ -56,22 +62,18 @@ public class MainViewModel : ViewModelBase, IDisposable
     {
         try
         {
-            Status = "Connecting to server...";
-
-            // Проверяем подключение
-            var status = await _grpcClient.GetStatusAsync(new Empty());
-            UpdateFromGrpcStatus(status);          
-            // Создаем новый CancellationTokenSource для подписки
+            ServerStatus = "Connecting to server...";
             _subscriptionCts = new CancellationTokenSource();
-            // Запускаем подписку на обновления
-            _subscriptionTask = StartMediaUpdatesSubscription(_subscriptionCts.Token);
 
+            var status = await _grpcClient.GetStatusAsync(new Empty());
+            UpdateFromGrpcStatus(status);
+            _subscriptionTask = StartMediaUpdatesSubscription(_subscriptionCts.Token);
             IsConnected = true;
-            Status = "Connected to media server";
+            ServerStatus = "Connected to media server";
         }
         catch (Exception ex)
         {
-            Status = $"Connection error: {ex.Message}";
+            ServerStatus = $"Connection error: {ex.Message}";
             IsConnected = false;
         }
     }
@@ -98,19 +100,19 @@ public class MainViewModel : ViewModelBase, IDisposable
         catch (RpcException rpcEx) when (rpcEx.StatusCode == StatusCode.Cancelled)
         {
             // Подписка отменена - это нормально
-            Status = "Disconnected from server";
+            MediaStatus = "Disconnected from server";
             IsConnected = false;
         }
         catch (Exception ex)
         {
-            Status = $"Subscription error: {ex.Message}";
+            MediaStatus = $"Subscription error: {ex.Message}";
             IsConnected = false;
         }
     }
 
     private Task UpdateFromGrpcUpdate(MediaUpdate update)
     {
-        return Task.Run(() =>
+        return Task.Run(async () =>
         {
             try
             {
@@ -126,8 +128,8 @@ public class MainViewModel : ViewModelBase, IDisposable
                 Artist = update.Artist ?? "Unknown Artist";
                 Album = update.Album ?? "Unknown Album";
                 AlbumArt = albumArt;
-
-                Status = $"Now playing: {Title}";
+                //MediaStatus = update.Status.;
+                MediaStatus = _grpcClient.GetStatus(new Empty()).Status.ToString();
             }
             catch (Exception ex)
             {
@@ -138,87 +140,78 @@ public class MainViewModel : ViewModelBase, IDisposable
 
     private void UpdateFromGrpcStatus(MediaStatusResponse status)
     {
-        Status = $"Status: {status.Status}";
+        ServerStatus = $"Status: {status.Status}";
+        MediaStatus = $"Status: {status.Status}";
     }
 
-    // Команды
-    public ReactiveCommand<Unit, Unit> PlayCommand { get; }
-    public ReactiveCommand<Unit, Unit> PauseCommand { get; }
-    public ReactiveCommand<Unit, Unit> NextCommand { get; }
-    public ReactiveCommand<Unit, Unit> PreviousCommand { get; }
-    public ReactiveCommand<Unit, Unit> ConnectCommand { get; }
-
-    private async Task PlayAsync()
+    private async Task PlayPauseAsync()
     {
         if (!IsConnected)
         {
-            Status = "Not connected to server";
+            ServerStatus = "Not connected to server";
             return;
         }
 
-        try
+        if (MediaStatus.Contains("pause", StringComparison.CurrentCultureIgnoreCase))
         {
-            Status = "Sending play command...";
-            var response = await _grpcClient.PlayAsync(new Empty());
+            try
+            {
+                ServerStatus = "Sending play command...";
+                var response = await _grpcClient.PlayAsync(new Empty());
 
-            if (response.Success)
-                Status = "Playing";
-            else
-                Status = $"Play failed: {response.Message}";
+                if (response.Success)
+                    ServerStatus = "Playing";
+                else
+                    ServerStatus = $"Play failed: {response.Message}";
+            }
+            catch (Exception ex)
+            {
+                ServerStatus = $"Play error: {ex.Message}";
+                IsConnected = false;
+            }
         }
-        catch (Exception ex)
+        else if (MediaStatus.Contains("play",StringComparison.CurrentCultureIgnoreCase))
         {
-            Status = $"Play error: {ex.Message}";
-            IsConnected = false;
-        }
-    }
+            try
+            {
+                ServerStatus = "Sending pause command...";
+                var response = await _grpcClient.PauseAsync(new Empty());
 
-    private async Task PauseAsync()
-    {
-        if (!IsConnected)
-        {
-            Status = "Not connected to server";
-            return;
+                if (response.Success)
+                    ServerStatus = "Paused";
+                else
+                    ServerStatus = $"Pause failed: {response.Message}";
+            }
+            catch (Exception ex)
+            {
+                ServerStatus = $"Pause error: {ex.Message}";
+                IsConnected = false;
+            }
         }
 
-        try
-        {
-            Status = "Sending pause command...";
-            var response = await _grpcClient.PauseAsync(new Empty());
-
-            if (response.Success)
-                Status = "Paused";
-            else
-                Status = $"Pause failed: {response.Message}";
-        }
-        catch (Exception ex)
-        {
-            Status = $"Pause error: {ex.Message}";
-            IsConnected = false;
-        }
     }
 
     private async Task NextAsync()
     {
         if (!IsConnected)
         {
-            Status = "Not connected to server";
+            ServerStatus = "Not connected to server";
             return;
         }
 
         try
         {
-            Status = "Sending next command...";
+            ServerStatus = "Sending next command...";
             var response = await _grpcClient.NextAsync(new Empty());
 
             if (response.Success)
-                Status = "Skipped to next track";
+                ServerStatus = "Skipped to next track";
             else
-                Status = $"Next failed: {response.Message}";
+                ServerStatus = $"Next failed: {response.Message}";
         }
         catch (Exception ex)
         {
-            Status = $"Next error: {ex.Message}";
+            ServerStatus = $"Next error: {ex.Message}";
             IsConnected = false;
         }
     }
@@ -227,23 +220,23 @@ public class MainViewModel : ViewModelBase, IDisposable
     {
         if (!IsConnected)
         {
-            Status = "Not connected to server";
+            ServerStatus = "Not connected to server";
             return;
         }
 
         try
         {
-            Status = "Sending previous command...";
+            ServerStatus = "Sending previous command...";
             var response = await _grpcClient.PreviousAsync(new Empty());
 
             if (response.Success)
-                Status = "Skipped to previous track";
+                ServerStatus = "Skipped to previous track";
             else
-                Status = $"Previous failed: {response.Message}";
+                ServerStatus = $"Previous failed: {response.Message}";
         }
         catch (Exception ex)
         {
-            Status = $"Previous error: {ex.Message}";
+            ServerStatus = $"Previous error: {ex.Message}";
             IsConnected = false;
         }
     }
@@ -273,10 +266,16 @@ public class MainViewModel : ViewModelBase, IDisposable
         set => this.RaiseAndSetIfChanged(ref _albumArt, value);
     }
 
-    public string Status
+    public string MediaStatus
     {
-        get => _status;
-        set => this.RaiseAndSetIfChanged(ref _status, value);
+        get => _mediaStatus;
+        set => this.RaiseAndSetIfChanged(ref _mediaStatus, value);
+    }
+
+    public string ServerStatus
+    {
+        get => _serverStatus;
+        set => this.RaiseAndSetIfChanged(ref _serverStatus, value);
     }
 
     public bool IsConnected
